@@ -44,10 +44,13 @@ def main():
 
     while cap.isOpened():
         success, image = cap.read()
+        alt_success, alt_image = cap.retrieve()
 
-        if not success:
+        if not success and not alt_success:
             print("failed")
             break
+
+        image = image or alt_image
 
         image = cv2.flip(image, 1)
 
