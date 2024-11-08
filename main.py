@@ -107,7 +107,7 @@ def main():
                 pt2 = (int(max(x_coords) * width), int(max(y_coords) * height))
 
                 cv2.rectangle(
-                    current_frame, (text_x, text_y), pt2, (255, 0, 0), 1, cv2.LINE_4
+                    current_frame, (text_x, text_y), pt2, (0, 0, 255), 1, cv2.LINE_8
                 )
                 cv2.putText(
                     current_frame,
