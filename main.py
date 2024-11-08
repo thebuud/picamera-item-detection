@@ -26,9 +26,10 @@ def detector_callback(result, unused_output_image: mp.Image):
 
 
 def main():
-    cap = cv2.VideoCapture()
+    cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
+    cap.open(0)
 
     base_options = python.BaseOptions(model_asset_path="hand_landmarker.task")
     options = vision.HandLandmarkerOptions(
@@ -39,6 +40,7 @@ def main():
     )
 
     detector = vision.HandLandmarker.create_from_options(options)
+    print(cap.isOpened())
 
     while cap.isOpened():
         success, image = cap.read()
