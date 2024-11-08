@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import mediapipe as mp
 
@@ -19,7 +21,7 @@ hands = mp_hands.Hands()
 DETECTION_RESULT = None
 
 
-def detector_callback(result, unused_output_image: mp.Image):
+def detector_callback(result, unused_output_image: mp.Image, timestamp):
     global DETECTION_RESULT
     print("Hand detected")
     DETECTION_RESULT = result
@@ -57,7 +59,7 @@ def main():
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
 
-        detector.detect_async(image)
+        detector.detect_async(image, time.time_ns())
 
         if DETECTION_RESULT:
             for idx in range(len(DETECTION_RESULT.hand_landmarks)):
