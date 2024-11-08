@@ -36,7 +36,7 @@ def main():
     cam = Picamera2()
     cam.configure(
         cam.create_preview_configuration(
-            main={"format": "XRGB8888", "size": (1280, 960)}
+            main={"format": "XRGB8888", "size": (640, 480)}
         )
     )
     cam.start()
