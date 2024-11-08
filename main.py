@@ -36,7 +36,7 @@ def main():
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
     # cap.open(-1)
     cam = Picamera2()
-    print(cam.sensor_modes)
+
     cam.configure(
         cam.create_preview_configuration(
             main={"format": "XRGB8888", "size": (640, 480)}
@@ -54,8 +54,14 @@ def main():
 
     detector = vision.HandLandmarker.create_from_options(options)
 
+    frame_count = 0
     while True:
         image = cam.capture_array()
+        frame_count += 1
+
+        # artificially reduce fps
+        if not frame_count % 4 == 0:
+            continue
 
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
