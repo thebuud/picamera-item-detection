@@ -63,6 +63,8 @@ def main():
 
         detector.detect_async(mp_image, time.time_ns() // 1_000_000)
 
+        current_frame = image
+
         if DETECTION_RESULT:
             for idx in range(len(DETECTION_RESULT.hand_landmarks)):
                 hand_landmarks = DETECTION_RESULT.hand_landmarks[idx]
@@ -77,8 +79,6 @@ def main():
                         for landmark in hand_landmarks
                     ]
                 )
-
-                current_frame = image
 
                 mp_drawing.draw_landmarks(
                     current_frame,
