@@ -54,55 +54,55 @@ def main():
 
         detector.detect_async(image)
 
-    if DETECTION_RESULT:
-        for idx in range(len(DETECTION_RESULT.hand_landmarks)):
-            hand_landmarks = DETECTION_RESULT.hand_landmarks[idx]
-            handedness = DETECTION_RESULT.handedness[idx]
+        if DETECTION_RESULT:
+            for idx in range(len(DETECTION_RESULT.hand_landmarks)):
+                hand_landmarks = DETECTION_RESULT.hand_landmarks[idx]
+                handedness = DETECTION_RESULT.handedness[idx]
 
-            hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-            hand_landmarks_proto.landmark.extend(
-                [
-                    landmark_pb2.NormalizedLandmark(
-                        x=landmark.x, y=landmark.y, z=landmark.z
-                    )
-                    for landmark in hand_landmarks
-                ]
-            )
+                hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+                hand_landmarks_proto.landmark.extend(
+                    [
+                        landmark_pb2.NormalizedLandmark(
+                            x=landmark.x, y=landmark.y, z=landmark.z
+                        )
+                        for landmark in hand_landmarks
+                    ]
+                )
 
-            mp_drawing.draw_landmarks(
-                image,
-                hand_landmarks_proto,
-                mp_hands.HAND_CONNECTIONS,
-                mp_drawing_styles.get_default_hand_landmarks_style(),
-                mp_drawing_styles.get_default_hand_connections_style(),
-            )
+                mp_drawing.draw_landmarks(
+                    image,
+                    hand_landmarks_proto,
+                    mp_hands.HAND_CONNECTIONS,
+                    mp_drawing_styles.get_default_hand_landmarks_style(),
+                    mp_drawing_styles.get_default_hand_connections_style(),
+                )
 
-            height, width, _ = image.shape
-            x_coords = [landmark.x for landmark in hand_landmarks]
-            y_coords = [landmark.y for landmark in hand_landmarks]
+                height, width, _ = image.shape
+                x_coords = [landmark.x for landmark in hand_landmarks]
+                y_coords = [landmark.y for landmark in hand_landmarks]
 
-            text_x = int(min(x_coords) * width)
-            text_y = int(min(y_coords) * height) - 10
+                text_x = int(min(x_coords) * width)
+                text_y = int(min(y_coords) * height) - 10
 
-            cv2.putText(
-                image,
-                f"{handedness[0].category_name}",
-                (text_x, text_y),
-                cv2.FONT_HERSHEY_DUPLEX,
-                1,
-                (88, 205, 54),
-                1,
-                cv2.LINE_AA,
-            )
+                cv2.putText(
+                    image,
+                    f"{handedness[0].category_name}",
+                    (text_x, text_y),
+                    cv2.FONT_HERSHEY_DUPLEX,
+                    1,
+                    (88, 205, 54),
+                    1,
+                    cv2.LINE_AA,
+                )
 
-            cv2.imshow("Hand Landmarker", image)
+        cv2.imshow("Hand Landmarker", image)
 
-            if cv2.waitKey(1) == 27:
-                break
+        if cv2.waitKey(1) == 27:
+            break
 
-        detector.close()
-        cap.release()
-        cv2.destroyAllWindows()
+    detector.close()
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 def alt_main():
