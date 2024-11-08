@@ -23,8 +23,10 @@ DETECTION_RESULT = None
 
 def detector_callback(result, unused_output_image: mp.Image, timestamp):
     global DETECTION_RESULT
-    if result:
-        print("Hand detected")
+    if result.hand_landmarks:
+        print(
+            f"Hand detected: processed in {(time.time_ns() // 1_000_000) - timestamp}ms"
+        )
     DETECTION_RESULT = result
 
 
@@ -34,6 +36,7 @@ def main():
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
     # cap.open(-1)
     cam = Picamera2()
+    print(cam.sensor_modes)
     cam.configure(
         cam.create_preview_configuration(
             main={"format": "XRGB8888", "size": (640, 480)}
