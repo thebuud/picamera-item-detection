@@ -59,7 +59,7 @@ def main():
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
-        detector.detect_async(image, time.time_ns())
+        detector.detect_async(mp_image, time.time_ns())
 
         if DETECTION_RESULT:
             for idx in range(len(DETECTION_RESULT.hand_landmarks)):
