@@ -100,7 +100,11 @@ def main():
                 x_coords = [landmark.x for landmark in hand_landmarks]
                 y_coords = [landmark.y for landmark in hand_landmarks]
 
-                text_x = int(min(x_coords) * width)
+                print(f"width: {width}")
+                min_x = min(x_coords)
+                print(f"min: {min_x}")
+                text_x = int(min_x * width)
+                print(f"text_x: {text_x}")
                 text_y = int(min(y_coords) * height) - 10
 
                 cv2.putText(
