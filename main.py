@@ -28,10 +28,17 @@ def detector_callback(result, unused_output_image: mp.Image, timestamp):
 
 
 def main():
-    cap = cv2.VideoCapture(-1)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
-    cap.open(-1)
+    # cap = cv2.VideoCapture(-1)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
+    # cap.open(-1)
+    cam = Picamera2()
+    cam.configure(
+        cam.create_preview_configuration(
+            main={"format": "XRGB8888", "size": (1280, 960)}
+        )
+    )
+    cam.start()
 
     base_options = python.BaseOptions(model_asset_path="hand_landmarker.task")
     options = vision.HandLandmarkerOptions(
@@ -42,23 +49,14 @@ def main():
     )
 
     detector = vision.HandLandmarker.create_from_options(options)
-    print(cap.isOpened())
 
-    while cap.isOpened():
-        success, image = cap.read()
-        alt_success, alt_image = cap.retrieve()
-
-        if not success and not alt_success:
-            print("failed")
-            break
-
-        image = image or alt_image
-
-        cv2.imshow("Hand Landmarker", image)
-
-        image = cv2.flip(image, 1)
+    while True:
+        image = cam.capture_array()
 
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # image = cv2.flip(image, 1)
+
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
         detector.detect_async(mp_image, time.time_ns() // 1_000_000)
@@ -112,7 +110,6 @@ def main():
             break
 
     detector.close()
-    cap.release()
     cv2.destroyAllWindows()
 
 
