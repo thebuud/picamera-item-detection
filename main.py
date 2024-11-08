@@ -100,17 +100,19 @@ def main():
                 x_coords = [landmark.x for landmark in hand_landmarks]
                 y_coords = [landmark.y for landmark in hand_landmarks]
 
-                print(f"width: {width}")
-                min_x = min(x_coords)
-                print(f"min: {min_x}")
-                text_x = int(min_x * width)
-                print(f"text_x: {text_x}")
-                text_y = int(min(y_coords) * height) - 10
+                # x_coords/y_coords are between 0 and 1. multiplying by width and height scales the relative coords to actual coords ex. min: 0.5 width: 640 coord = 320
+                text_x = int(min(x_coords) * width)
+                text_y = int(min(y_coords) * height)
 
+                pt2 = (int(max(x_coords) * width), int(max(y_coords) * height))
+
+                cv2.rectangle(
+                    current_frame, (text_x, text_y), pt2, (255, 0, 0), 1, cv2.LINE_4
+                )
                 cv2.putText(
                     current_frame,
                     f"{handedness[0].category_name}",
-                    (text_x, text_y),
+                    (text_x, text_y - 10),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
                     (88, 205, 54),
