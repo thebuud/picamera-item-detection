@@ -54,6 +54,8 @@ def main():
 
         image = image or alt_image
 
+        cv2.imshow("Hand Landmarker", image)
+
         image = cv2.flip(image, 1)
 
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -76,15 +78,17 @@ def main():
                     ]
                 )
 
+                current_frame = image
+
                 mp_drawing.draw_landmarks(
-                    image,
+                    current_frame,
                     hand_landmarks_proto,
                     mp_hands.HAND_CONNECTIONS,
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style(),
                 )
 
-                height, width, _ = image.shape
+                height, width, _ = current_frame.shape
                 x_coords = [landmark.x for landmark in hand_landmarks]
                 y_coords = [landmark.y for landmark in hand_landmarks]
 
@@ -92,7 +96,7 @@ def main():
                 text_y = int(min(y_coords) * height) - 10
 
                 cv2.putText(
-                    image,
+                    current_frame,
                     f"{handedness[0].category_name}",
                     (text_x, text_y),
                     cv2.FONT_HERSHEY_DUPLEX,
@@ -102,7 +106,7 @@ def main():
                     cv2.LINE_AA,
                 )
 
-        cv2.imshow("Hand Landmarker", image)
+        cv2.imshow("Hand Landmarker", current_frame)
 
         if cv2.waitKey(1) == 27:
             break
