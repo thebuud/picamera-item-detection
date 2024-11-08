@@ -23,7 +23,8 @@ DETECTION_RESULT = None
 
 def detector_callback(result, unused_output_image: mp.Image, timestamp):
     global DETECTION_RESULT
-    print("Hand detected")
+    if result:
+        print("Hand detected")
     DETECTION_RESULT = result
 
 
@@ -61,7 +62,7 @@ def main():
 
         detector.detect_async(mp_image, time.time_ns() // 1_000_000)
 
-        current_frame = image
+        current_frame = rgb_image
 
         if DETECTION_RESULT:
             for idx in range(len(DETECTION_RESULT.hand_landmarks)):
