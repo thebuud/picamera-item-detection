@@ -3,12 +3,18 @@ import numpy as np
 
 import cv2
 import mediapipe as mp
+import tensorflow as tf  # noqa
+from keras._tf_keras.keras.applications.inception_v3 import (
+    InceptionV3,
+    decode_predictions,  # noqa: F401
+    preprocess_input,  # noqa: F401
+)
 
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.framework.formats import landmark_pb2
 
-from picamera2 import Picamera2
+# from picamera2 import Picamera2
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -17,7 +23,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Initialize hand detection module
 hands = mp_hands.Hands()
 
-net = cv2.dnn.readNetFromTensorflow("./saved_model_1.pb")
+# net = cv2.dnn.readNetFromTensorflow("./saved_model_1.pb")
 
 with open("imagenet-classes.txt", "r") as f:
     labels = [line.strip() for line in f.readlines()]
@@ -41,7 +47,7 @@ def main():
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
     # cap.open(-1)
-    cam = Picamera2()
+    cam = Picamera2()  # type: ignore # noqa
 
     cam.configure(
         cam.create_preview_configuration(
@@ -136,7 +142,8 @@ def main():
 
 
 def alt_main():
-    cam = Picamera2()
+    model = InceptionV3(weights="imagenet")
+    cam = Picamera2()  # type: ignore # noqa
     cam.configure(
         cam.create_preview_configuration(
             main={"format": "XRGB8888", "size": (640, 480)}
@@ -148,21 +155,18 @@ def alt_main():
 
     # Convert frame to RGB
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    resized_frame_rgb = cv2.resize(frame_rgb, (299, 299))
 
-    blob = cv2.dnn.blobFromImage(
-        image=frame_rgb,
-        scalefactor=1,
-        size=(299, 299),
-        mean=(103.53, 116.28, 123.675),
-        swapRB=False,
-        crop=False,
-    )
+    img_array = np.expand_dims(resized_frame_rgb, axis=0)
 
-    net.setInput(blob)
-    output = net.forward()
-    top_pred = np.argmax(output[0])
+    img_array = preprocess_input(img_array)
 
-    print(labels[top_pred])
+    predictions = model.predict(img_array)
+
+    decoded_predictions = decode_predictions(predictions, top=1)[0]
+
+    for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
+        print(f"{i+1}: {label} ({score * 100:.2f}%)")
 
     cv2.imshow("Hand Object Detection", frame_rgb)
     cv2.waitKey(10)
