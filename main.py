@@ -168,7 +168,7 @@ def alt_main():
     for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
         print(f"{i+1}: {label} ({score * 100:.2f}%)")
 
-    cv2.imshow("Hand Object Detection", frame_rgb)
+    cv2.imshow("Hand Object Detection", cv2.resize(frame_rgb, (640, 480)))
     cv2.waitKey(10)
     time.sleep(10)
 
