@@ -163,7 +163,7 @@ def alt_main():
 
     predictions = model.predict(img_array)
 
-    decoded_predictions = decode_predictions(predictions, top=1)[0]
+    decoded_predictions = decode_predictions(predictions, top=5)[0]
 
     for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
         print(f"{i+1}: {label} ({score * 100:.2f}%)")
