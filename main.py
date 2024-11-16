@@ -170,6 +170,7 @@ def alt_main():
 
     cv2.imshow("Hand Object Detection", frame_rgb)
     cv2.waitKey(10)
+    time.sleep(10)
 
     cv2.destroyAllWindows()
 
