@@ -14,7 +14,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.framework.formats import landmark_pb2
 
-# from picamera2 import Picamera2
+from picamera2 import Picamera2
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
