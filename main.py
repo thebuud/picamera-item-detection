@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 import cv2
 import mediapipe as mp
@@ -15,6 +16,11 @@ mp_drawing_styles = mp.solutions.drawing_styles
 
 # Initialize hand detection module
 hands = mp_hands.Hands()
+
+net = cv2.dnn.readNetFromTensorflow("saved_model.pb")
+
+with open("imagenet-classes.txt", "r") as f:
+    labels = [line.strip() for line in f.readlines()]
 
 # Load pretrained object detection model (example: YOLO / SSD)
 # ...
@@ -107,7 +113,7 @@ def main():
                 pt2 = (int(max(x_coords) * width), int(max(y_coords) * height))
 
                 cv2.rectangle(
-                    current_frame, (text_x, text_y), pt2, (0, 0, 255), 1, cv2.LINE_8
+                    current_frame, (text_x, text_y), pt2, (0, 0, 255), 2, cv2.LINE_8
                 )
                 cv2.putText(
                     current_frame,
@@ -138,31 +144,32 @@ def alt_main():
     )
     cam.start()
 
-    while True:
-        frame = cam.capture_array()
+    frame = cam.capture_array()
 
-        # Convert frame to RGB
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # Convert frame to RGB
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # Process frame for hand detection
-        results = hands.process(frame_rgb)
+    blob = cv2.dnn.blobFromImage(
+        image=frame_rgb,
+        scalefactor=1,
+        size=(299, 299),
+        mean=(103.53, 116.28, 123.675),
+        swapRB=False,
+        crop=False,
+    )
 
-        if results.multi_hand_landmarks:
-            print("hand detected")
+    net.setInput(blob)
+    output = net.forward()
+    top_pred = np.argmax(output[0])
 
-            # Extract hand ROI
-            # ...
+    print(labels[top_pred])
 
-            # Apply object detection within hand ROI
-            # ...
-
-        cv2.imshow("Hand Object Detection", frame)
-        if cv2.waitKey(10) == ord("q"):
-            break
+    cv2.imshow("Hand Object Detection", frame_rgb)
+    cv2.waitKey(10)
 
     cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    # alt_main()
-    main()
+    alt_main()
+    # main()
