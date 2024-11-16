@@ -17,7 +17,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Initialize hand detection module
 hands = mp_hands.Hands()
 
-net = cv2.dnn.readNetFromTensorflow("./saved_model.pb")
+net = cv2.dnn.readNetFromTensorflow("./saved_model_1.pb")
 
 with open("imagenet-classes.txt", "r") as f:
     labels = [line.strip() for line in f.readlines()]
