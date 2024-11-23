@@ -151,6 +151,7 @@ def alt_main():
     )
     cam.start()
 
+    start = time.time_ns()
     frame = cam.capture_array()
 
     # Convert frame to RGB
@@ -164,6 +165,10 @@ def alt_main():
     predictions = model.predict(img_array)
 
     decoded_predictions = decode_predictions(predictions, top=5)[0]
+
+    end = time.time_ns()
+
+    print(f"Detected in {(end - start) // 1_000_000}ms")
 
     for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
         print(f"{i+1}: {label} ({score * 100:.2f}%)")
