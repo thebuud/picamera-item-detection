@@ -168,8 +168,8 @@ def main():
                 )
                 cv2.rectangle(
                     current_frame,
-                    (new_vertices[0][0], new_vertices[1][0]),
-                    (new_vertices[0][2], new_vertices[1][2]),
+                    (int(new_vertices[0][0]), int(new_vertices[1][0])),
+                    (int(new_vertices[0][2]), int(new_vertices[1][2])),
                     (0, 255, 0),
                     2,
                     cv2.LINE_8,
