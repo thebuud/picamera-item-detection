@@ -147,6 +147,12 @@ def main():
                 translate_back = translation_matrix(center_x, center_y)
                 transformation_matrix = translate_back @ scale @ translate_to_origin
 
+                # first array is x coord of each point
+                # points are ordered TL, TR, BR, BL
+                # T = Top, B = Bottom, L = Left, R = Right
+                # [T, T, B, B] <- x coord
+                # [L, R, R, L] <- y coord
+                # [1, 1, 1, 1] <- z coord if it exist
                 new_vertices = np.dot(
                     transformation_matrix,
                     np.array(
@@ -157,12 +163,16 @@ def main():
                         ]
                     ),
                 )
-
                 cv2.rectangle(
                     current_frame, (text_x, text_y), pt2, (0, 0, 255), 2, cv2.LINE_8
                 )
                 cv2.rectangle(
-                    current_frame, *(new_vertices[:2, :]), (0, 255, 0), 2, cv2.LINE_8
+                    current_frame,
+                    (new_vertices[0][0], new_vertices[1][0]),
+                    (new_vertices[0][2], new_vertices[1][2]),
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_8,
                 )
 
                 cv2.putText(
