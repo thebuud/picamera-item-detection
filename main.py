@@ -23,7 +23,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Initialize hand detection module
 hands = mp_hands.Hands()
 
-# net = cv2.dnn.readNetFromTensorflow("./saved_model_1.pb")
+MODEL = InceptionV3(weights="imagenet")
 
 with open("imagenet-classes.txt", "r") as f:
     labels = [line.strip() for line in f.readlines()]
@@ -40,6 +40,25 @@ def detector_callback(result, unused_output_image: mp.Image, timestamp):
             f"Hand detected: processed in {(time.time_ns() // 1_000_000) - timestamp}ms"
         )
     DETECTION_RESULT = result
+
+
+def detect_object(frame, threshold: float, top_n: int):
+    resized_frame_rgb = cv2.resize(frame, (299, 299))
+
+    img_array = np.expand_dims(resized_frame_rgb, axis=0)
+
+    img_array = preprocess_input(img_array)
+
+    predictions = MODEL.predict(img_array)
+
+    decoded_predictions = decode_predictions(predictions, top=top_n)[0]
+
+    results: list[tuple[str, float]] = []
+    for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
+        if score >= threshold:
+            results.append((label, score))
+
+    return results
 
 
 def main():
@@ -118,9 +137,34 @@ def main():
 
                 pt2 = (int(max(x_coords) * width), int(max(y_coords) * height))
 
+                x1, y1, x2, y2 = text_x, text_y, *pt2
+
+                center_x = (x1 + x2) / 2
+                center_y = (y1 + y2) / 2
+
+                translate_to_origin = translation_matrix(-center_x, -center_y)
+                scale = scaling_matrix(1.5, 1.5)
+                translate_back = translation_matrix(center_x, center_y)
+                transformation_matrix = translate_back @ scale @ translate_to_origin
+
+                new_vertices = np.dot(
+                    transformation_matrix,
+                    np.array(
+                        [
+                            [x1, x2, x2, x1],
+                            [y1, y1, y2, y2],
+                            [1, 1, 1, 1],
+                        ]
+                    ),
+                )
+
                 cv2.rectangle(
                     current_frame, (text_x, text_y), pt2, (0, 0, 255), 2, cv2.LINE_8
                 )
+                cv2.rectangle(
+                    current_frame, *(new_vertices[:2, :]), (0, 255, 0), 2, cv2.LINE_8
+                )
+
                 cv2.putText(
                     current_frame,
                     f"{handedness[0].category_name}",
@@ -141,45 +185,25 @@ def main():
     cv2.destroyAllWindows()
 
 
-def alt_main():
-    model = InceptionV3(weights="imagenet")
-    cam = Picamera2()  # type: ignore # noqa
-    cam.configure(
-        cam.create_preview_configuration(
-            main={"format": "XRGB8888", "size": (640, 480)}
-        )
+def scaling_matrix(sx, sy):
+    return np.array(
+        [
+            [sx, 0, 0],
+            [0, sy, 0],
+            [0, 0, 1],
+        ]
     )
-    cam.start()
 
-    start = time.time_ns()
-    frame = cam.capture_array()
 
-    # Convert frame to RGB
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    resized_frame_rgb = cv2.resize(frame_rgb, (299, 299))
-
-    img_array = np.expand_dims(resized_frame_rgb, axis=0)
-
-    img_array = preprocess_input(img_array)
-
-    predictions = model.predict(img_array)
-
-    decoded_predictions = decode_predictions(predictions, top=5)[0]
-
-    end = time.time_ns()
-
-    print(f"Detected in {(end - start) // 1_000_000}ms")
-
-    for i, (imagenet_id, label, score) in enumerate(decoded_predictions):
-        print(f"{i+1}: {label} ({score * 100:.2f}%)")
-
-    cv2.imshow("Hand Object Detection", cv2.resize(frame_rgb, (640, 480)))
-    cv2.waitKey(10)
-    time.sleep(10)
-
-    cv2.destroyAllWindows()
+def translation_matrix(tx, ty):
+    return np.array(
+        [
+            [1, 0, tx],
+            [0, 1, ty],
+            [0, 0, 1],
+        ]
+    )
 
 
 if __name__ == "__main__":
-    alt_main()
-    # main()
+    main()
