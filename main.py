@@ -178,7 +178,7 @@ def main():
 
                     # crop image using np slicing since image is stored as a numpy array
                     cropped_frame = current_frame[
-                        scaled_pt1[1] : scaled_pt2[1], scaled_pt1[0], scaled_pt2[0]
+                        scaled_pt1[1] : scaled_pt2[1], scaled_pt1[0] : scaled_pt2[0]
                     ]
 
                     image_detector_thread = threading.Thread(
