@@ -183,7 +183,7 @@ def main():
                 if image_detector_thread is None:
                     image_detector_thread = threading.Thread(
                         target=detect_object,
-                        args=[cropped_frame, 0.80, 3, OBJECT_DETECTION_RESULT],
+                        args=[cropped_frame, 0.50, 3, OBJECT_DETECTION_RESULT],
                     )
                     image_detector_thread.start()
 
