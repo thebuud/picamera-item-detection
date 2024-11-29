@@ -106,7 +106,7 @@ def main():
     image_detector_thread = None
     text_to_speach_thread = None
 
-    last_object_reconized = (None, 0)
+    last_object_recognized = [None, 0]
 
     text_to_speach_queue = list()
 
@@ -244,17 +244,17 @@ def main():
             and OBJECT_DETECTION_RESULT["results"]
         ):
             result = OBJECT_DETECTION_RESULT["results"][0]
-            if result[0] == last_object_reconized[0]:
-                last_object_reconized[1] += 1
+            if result[0] == last_object_recognized[0]:
+                last_object_recognized[1] += 1
             else:
-                last_object_reconized[0] = result[0]
-                last_object_reconized[1] = 1
+                last_object_recognized[0] = result[0]
+                last_object_recognized[1] = 1
 
-            if last_object_reconized[1] == 3:
+            if last_object_recognized[1] == 3:
                 label = (
-                    f"an {last_object_reconized[0]}"
-                    if last_object_reconized[0][0].upper() in ["A", "E", "I", "O", "U"]
-                    else f"a {last_object_reconized[0]}"
+                    f"an {last_object_recognized[0]}"
+                    if last_object_recognized[0][0].upper() in ["A", "E", "I", "O", "U"]
+                    else f"a {last_object_recognized[0]}"
                 )
                 text_to_speach_queue.append(f"You have {label} in your hand")
 
