@@ -82,7 +82,7 @@ def detect_object(frame, threshold: float, top_n: int, result_store: dict = None
 
 def text_to_speech_external_loop():
     engine = pyttsx3.init()
-    engine.setProperty("rate", engine.getProperty("rate") - 20)
+    engine.setProperty("rate", engine.getProperty("rate") - 50)
     while True:
         try:
             text = text_to_speech_queue.get()
@@ -271,7 +271,9 @@ def main():
                         in ["A", "E", "I", "O", "U"]
                         else f"a {last_object_recognized[0]}"
                     )
-                    text_to_speech_queue.put(f"You have {label} in your hand")
+                    text_to_speech_queue.put(
+                        f"You have {label} in your hand. That's awesome!"
+                    )
 
             image_detector_thread = None
 
