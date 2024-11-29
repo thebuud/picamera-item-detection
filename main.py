@@ -241,6 +241,7 @@ def main():
         if image_detector_thread is not None and not image_detector_thread.is_alive():
             if OBJECT_DETECTION_RESULT["results"]:
                 result = OBJECT_DETECTION_RESULT["results"][0]
+                print(result)
                 if result[0] == last_object_recognized[0]:
                     last_object_recognized[1] += 1
                 else:
@@ -270,14 +271,16 @@ def main():
                     target=lambda engine, text: engine.say(text) or engine.runAndWait(),
                     args=[engine, text],
                 )
+                print(f'Starting text to speech thread for "{text}"')
                 text_to_speach_thread.start()
 
-            except IndexError:
-                pass
+            except IndexError as e:
+                print("IndexError", e)
 
-            except Exception:
+            except Exception as e:
                 if text:
                     text_to_speach_queue.insert(0, text)
+                print("Exception:", e)
 
             finally:
                 text = None
