@@ -79,6 +79,12 @@ def detect_object(frame, threshold: float, top_n: int, result_store: dict = None
     return result_store
 
 
+def text_to_speech_external_loop(engine: pyttsx3.Engine):
+    while True:
+        engine.iterate()
+        time.sleep(0.25)
+
+
 def main():
     # cap = cv2.VideoCapture(-1)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -104,11 +110,15 @@ def main():
     detector = vision.HandLandmarker.create_from_options(options)
 
     image_detector_thread = None
-    text_to_speach_thread = None
+
+    engine.startLoop(False)
+    engine.setProperty("rate", engine.getProperty("rate") - 20)
+    text_to_speach_thread = threading.Thread(
+        target=text_to_speech_external_loop, args=[engine]
+    )
+    text_to_speach_thread.start()
 
     last_object_recognized = [None, 0]
-
-    text_to_speach_queue = list()
 
     frame_count = 0
     while True:
@@ -255,7 +265,7 @@ def main():
                         in ["A", "E", "I", "O", "U"]
                         else f"a {last_object_recognized[0]}"
                     )
-                    text_to_speach_queue.append(f"You have {label} in your hand")
+                    engine.say(f"You have {label} in your hand")
 
             image_detector_thread = None
 
@@ -264,31 +274,9 @@ def main():
         if cv2.waitKey(1) == 27:
             break
 
-        if (
-            text_to_speach_thread is None or not text_to_speach_thread.is_alive()
-        ) and len(text_to_speach_queue) > 0:
-            try:
-                text = text_to_speach_queue.pop(0)
-                text_to_speach_thread = threading.Thread(
-                    target=lambda engine, text: engine.say(text) or engine.runAndWait(),
-                    args=[engine, text],
-                )
-                print(f'Starting text to speech thread for "{text}"')
-                text_to_speach_thread.start()
-
-            except IndexError as e:
-                print("IndexError", e)
-
-            except Exception as e:
-                if text:
-                    text_to_speach_queue.insert(0, text)
-                print("Exception:", e)
-
-            finally:
-                text = None
-
     detector.close()
     cv2.destroyAllWindows()
+    engine.endLoop()
 
 
 def scaling_matrix(sx, sy):
