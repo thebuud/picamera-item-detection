@@ -59,7 +59,7 @@ def detect_object(frame, threshold: float, top_n: int, result_store: dict = None
     if result_store is None:
         result_store = {}
 
-    resized_frame_rgb = cv2.resize(frame, *MODEL.input_shape[1:])
+    resized_frame_rgb = cv2.resize(frame, MODEL.input_shape[1:3])
 
     img_array = np.expand_dims(resized_frame_rgb, axis=0)
 
