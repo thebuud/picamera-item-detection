@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import queue
 import threading
 
 import pyttsx3
@@ -20,8 +21,8 @@ from mediapipe.framework.formats import landmark_pb2  # noqa
 
 from picamera2 import Picamera2
 
-# Initialize py text to speach engine
-engine = pyttsx3.init()
+# Initialize py text to speach engine queue
+text_to_speech_queue = queue.Queue()
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -79,10 +80,17 @@ def detect_object(frame, threshold: float, top_n: int, result_store: dict = None
     return result_store
 
 
-def text_to_speech_external_loop(engine: pyttsx3.Engine):
+def text_to_speech_external_loop():
+    engine = pyttsx3.init()
+    engine.setProperty("rate", engine.getProperty("rate") - 20)
     while True:
-        engine.iterate()
-        time.sleep(0.25)
+        try:
+            text = text_to_speech_queue.get()
+            engine.say(text)
+            engine.runAndWait()
+            time.sleep(0.25)
+        except queue.Empty:
+            time.sleep(0.1)
 
 
 def main():
@@ -111,10 +119,8 @@ def main():
 
     image_detector_thread = None
 
-    engine.startLoop(False)
-    engine.setProperty("rate", engine.getProperty("rate") - 20)
     text_to_speach_thread = threading.Thread(
-        target=text_to_speech_external_loop, args=[engine]
+        target=text_to_speech_external_loop, args=[]
     )
     text_to_speach_thread.start()
 
@@ -265,7 +271,7 @@ def main():
                         in ["A", "E", "I", "O", "U"]
                         else f"a {last_object_recognized[0]}"
                     )
-                    engine.say(f"You have {label} in your hand")
+                    text_to_speech_queue.put(f"You have {label} in your hand")
 
             image_detector_thread = None
 
@@ -276,7 +282,6 @@ def main():
 
     detector.close()
     cv2.destroyAllWindows()
-    engine.endLoop()
 
 
 def scaling_matrix(sx, sy):
