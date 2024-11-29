@@ -238,25 +238,23 @@ def main():
                     cv2.LINE_AA,
                 )
 
-        if (
-            image_detector_thread is not None
-            and not image_detector_thread.is_alive()
-            and OBJECT_DETECTION_RESULT["results"]
-        ):
-            result = OBJECT_DETECTION_RESULT["results"][0]
-            if result[0] == last_object_recognized[0]:
-                last_object_recognized[1] += 1
-            else:
-                last_object_recognized[0] = result[0]
-                last_object_recognized[1] = 1
+        if image_detector_thread is not None and not image_detector_thread.is_alive():
+            if OBJECT_DETECTION_RESULT["results"]:
+                result = OBJECT_DETECTION_RESULT["results"][0]
+                if result[0] == last_object_recognized[0]:
+                    last_object_recognized[1] += 1
+                else:
+                    last_object_recognized[0] = result[0]
+                    last_object_recognized[1] = 1
 
-            if last_object_recognized[1] == 3:
-                label = (
-                    f"an {last_object_recognized[0]}"
-                    if last_object_recognized[0][0].upper() in ["A", "E", "I", "O", "U"]
-                    else f"a {last_object_recognized[0]}"
-                )
-                text_to_speach_queue.append(f"You have {label} in your hand")
+                if last_object_recognized[1] == 3:
+                    label = (
+                        f"an {last_object_recognized[0]}"
+                        if last_object_recognized[0][0].upper()
+                        in ["A", "E", "I", "O", "U"]
+                        else f"a {last_object_recognized[0]}"
+                    )
+                    text_to_speach_queue.append(f"You have {label} in your hand")
 
             image_detector_thread = None
 
