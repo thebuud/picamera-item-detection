@@ -5,10 +5,16 @@ import threading
 import cv2
 import mediapipe as mp
 import tensorflow as tf  # noqa
-from keras._tf_keras.keras.applications.inception_v3 import (
-    InceptionV3,
-    decode_predictions,  # noqa: F401
-    preprocess_input,  # noqa: F401
+
+# from keras._tf_keras.keras.applications.inception_v3 import (
+#     InceptionV3,
+#     decode_predictions,
+#     preprocess_input,
+# )
+from keras._tf_keras.keras.applications.resnet_v2 import (
+    ResNet50V2,
+    decode_predictions,
+    preprocess_input,
 )
 
 from mediapipe.tasks import python
@@ -24,7 +30,8 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Initialize hand detection module
 hands = mp_hands.Hands()
 
-MODEL = InceptionV3(weights="imagenet")
+# MODEL = InceptionV3(weights="imagenet")
+MODEL = ResNet50V2()
 
 print("Warming up Prediction model")
 dummy_input = tf.zeros((1, *MODEL.input_shape[1:]))
@@ -52,7 +59,7 @@ def detect_object(frame, threshold: float, top_n: int, result_store: dict = None
     if result_store is None:
         result_store = {}
 
-    resized_frame_rgb = cv2.resize(frame, (299, 299))
+    resized_frame_rgb = cv2.resize(frame, *MODEL.input_shape[1:])
 
     img_array = np.expand_dims(resized_frame_rgb, axis=0)
 
