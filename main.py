@@ -26,6 +26,11 @@ hands = mp_hands.Hands()
 
 MODEL = InceptionV3(weights="imagenet")
 
+print("Warming up Prediction model")
+dummy_input = tf.zeros((1, *MODEL.input_shape[1:]))
+MODEL.predict(dummy_input)
+print("Warm")
+
 with open("imagenet-classes.txt", "r") as f:
     labels = [line.strip() for line in f.readlines()]
 
@@ -186,6 +191,7 @@ def main():
                         args=[cropped_frame, 0.20, 10, OBJECT_DETECTION_RESULT],
                     )
                     image_detector_thread.start()
+                    cv2.imshow("Detection Image", cropped_frame)
 
                 cv2.rectangle(
                     current_frame,
