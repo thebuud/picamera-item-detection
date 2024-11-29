@@ -264,7 +264,11 @@ def main():
         if cv2.waitKey(1) == 27:
             break
 
-        if text_to_speach_thread is None or not text_to_speach_thread.is_alive():
+        if (
+            text_to_speach_thread is None
+            or not text_to_speach_thread.is_alive()
+            and len(text_to_speach_queue) > 0
+        ):
             try:
                 text = text_to_speach_queue.pop(0)
                 text_to_speach_thread = threading.Thread(
