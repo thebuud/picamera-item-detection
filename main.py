@@ -177,8 +177,16 @@ def main():
                         ]
                     ),
                 )
+                original_image_width, original_image_height, _ = current_frame.shape
                 scaled_pt1 = (int(new_vertices[0][0]), int(new_vertices[1][0]))
                 scaled_pt2 = (int(new_vertices[0][2]), int(new_vertices[1][2]))
+
+                scaled_pt1 = normalize_scaled_point(
+                    *scaled_pt1, original_image_width, original_image_height
+                )
+                scaled_pt2 = normalize_scaled_point(
+                    *scaled_pt2, original_image_width, original_image_height
+                )
 
                 # crop image using np slicing since image is stored as a numpy array
                 cropped_frame = current_frame[
@@ -248,6 +256,21 @@ def translation_matrix(tx, ty):
             [0, 0, 1],
         ]
     )
+
+
+def normalize_scaled_point(
+    x: int, y: int, original_width: int, original_height: int
+) -> tuple[int, int]:
+    if x < 0:
+        x = 0
+    elif x > original_width:
+        x = original_width
+
+    if y < 0:
+        y = 0
+    elif y > original_height:
+        y = original_height
+    return (x, y)
 
 
 if __name__ == "__main__":
