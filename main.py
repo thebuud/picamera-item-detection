@@ -2,17 +2,13 @@ import time
 import numpy as np
 import threading
 
+import pyttsx3
+
 import cv2
 import mediapipe as mp
 import tensorflow as tf  # noqa
 
-# from keras._tf_keras.keras.applications.inception_v3 import (
-#     InceptionV3,
-#     decode_predictions,
-#     preprocess_input,
-# )
 from keras._tf_keras.keras.applications.resnet_v2 import (
-    # ResNet50V2,
     ResNet152V2,
     decode_predictions,
     preprocess_input,
@@ -24,6 +20,9 @@ from mediapipe.framework.formats import landmark_pb2  # noqa
 
 from picamera2 import Picamera2
 
+# Initialize py text to speach engine
+engine = pyttsx3.init()
+
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -31,7 +30,6 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Initialize hand detection module
 hands = mp_hands.Hands()
 
-# MODEL = InceptionV3(weights="imagenet")
 MODEL = ResNet152V2()
 
 print("Warming up Prediction model")
@@ -106,6 +104,11 @@ def main():
     detector = vision.HandLandmarker.create_from_options(options)
 
     image_detector_thread = None
+    text_to_speach_thread = None
+
+    last_object_reconized = (None, 0)
+
+    text_to_speach_queue = list()
 
     frame_count = 0
     while True:
@@ -206,7 +209,7 @@ def main():
                 if image_detector_thread is None:
                     image_detector_thread = threading.Thread(
                         target=detect_object,
-                        args=[cropped_frame, 0.20, 10, OBJECT_DETECTION_RESULT],
+                        args=[cropped_frame, 0.85, 10, OBJECT_DETECTION_RESULT],
                     )
                     image_detector_thread.start()
                     cv2.imshow("Detection Image", cropped_frame)
@@ -235,14 +238,51 @@ def main():
                     cv2.LINE_AA,
                 )
 
-        if image_detector_thread is not None and not image_detector_thread.is_alive():
-            print(OBJECT_DETECTION_RESULT["results"])
+        if (
+            image_detector_thread is not None
+            and not image_detector_thread.is_alive()
+            and OBJECT_DETECTION_RESULT["results"]
+        ):
+            result = OBJECT_DETECTION_RESULT["results"][0]
+            if result[0] == last_object_reconized[0]:
+                last_object_reconized[1] += 1
+            else:
+                last_object_reconized[0] = result[0]
+                last_object_reconized[1] = 1
+
+            if last_object_reconized[1] == 3:
+                label = (
+                    f"an {last_object_reconized[0]}"
+                    if last_object_reconized[0][0].upper() in ["A", "E", "I", "O", "U"]
+                    else f"a {last_object_reconized[0]}"
+                )
+                text_to_speach_queue.append(f"You have {label} in your hand")
+
             image_detector_thread = None
 
         cv2.imshow("Hand Landmarker", current_frame)
 
         if cv2.waitKey(1) == 27:
             break
+
+        if text_to_speach_thread is None or not text_to_speach_thread.is_alive():
+            try:
+                text = text_to_speach_queue.pop(0)
+                text_to_speach_thread = threading.Thread(
+                    target=lambda engine, text: engine.say(text) or engine.runAndWait(),
+                    args=[engine, text],
+                )
+                text_to_speach_thread.start()
+
+            except IndexError:
+                pass
+
+            except Exception:
+                if text:
+                    text_to_speach_queue.insert(0, text)
+
+            finally:
+                text = None
 
     detector.close()
     cv2.destroyAllWindows()
