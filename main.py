@@ -12,7 +12,8 @@ import tensorflow as tf  # noqa
 #     preprocess_input,
 # )
 from keras._tf_keras.keras.applications.resnet_v2 import (
-    ResNet50V2,
+    # ResNet50V2,
+    ResNet152V2,
     decode_predictions,
     preprocess_input,
 )
@@ -31,7 +32,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 hands = mp_hands.Hands()
 
 # MODEL = InceptionV3(weights="imagenet")
-MODEL = ResNet50V2()
+MODEL = ResNet152V2()
 
 print("Warming up Prediction model")
 dummy_input = tf.zeros((1, *MODEL.input_shape[1:]))
