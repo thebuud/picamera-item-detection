@@ -94,10 +94,6 @@ def text_to_speech_external_loop():
 
 
 def main():
-    # cap = cv2.VideoCapture(-1)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
-    # cap.open(-1)
     cam = Picamera2()  # type: ignore # noqa
 
     cam.configure(
@@ -137,8 +133,6 @@ def main():
 
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # image = cv2.flip(image, 1)
-
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
         detector.detect_async(mp_image, time.time_ns() // 1_000_000)
@@ -150,24 +144,6 @@ def main():
                 hand_landmarks = HAND_DETECTION_RESULT.hand_landmarks[idx]
                 handedness = HAND_DETECTION_RESULT.handedness[idx]
 
-                # hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-                # hand_landmarks_proto.landmark.extend(
-                #     [
-                #         landmark_pb2.NormalizedLandmark(
-                #             x=landmark.x, y=landmark.y, z=landmark.z
-                #         )
-                #         for landmark in hand_landmarks
-                #     ]
-                # )
-
-                # mp_drawing.draw_landmarks(
-                #     current_frame,
-                #     hand_landmarks_proto,
-                #     mp_hands.HAND_CONNECTIONS,
-                #     mp_drawing_styles.get_default_hand_landmarks_style(),
-                #     mp_drawing_styles.get_default_hand_connections_style(),
-                # )
-
                 height, width, _ = current_frame.shape
                 x_coords = [landmark.x for landmark in hand_landmarks]
                 y_coords = [landmark.y for landmark in hand_landmarks]
@@ -178,48 +154,6 @@ def main():
 
                 pt2 = (int(max(x_coords) * width), int(max(y_coords) * height))
 
-                # x1, y1, x2, y2 = text_x, text_y, *pt2
-
-                # center_x = (x1 + x2) / 2
-                # center_y = (y1 + y2) / 2
-
-                # translate_to_origin = translation_matrix(-center_x, -center_y)
-                # scale = scaling_matrix(1.5, 1.5)
-                # translate_back = translation_matrix(center_x, center_y)
-                # transformation_matrix = translate_back @ scale @ translate_to_origin
-
-                # # first array is x coord of each point
-                # # points are ordered TL, TR, BR, BL
-                # # T = Top, B = Bottom, L = Left, R = Right
-                # # [T, T, B, B] <- x coord
-                # # [L, R, R, L] <- y coord
-                # # [1, 1, 1, 1] <- z coord if it exist
-                # new_vertices = np.dot(
-                #     transformation_matrix,
-                #     np.array(
-                #         [
-                #             [x1, x2, x2, x1],
-                #             [y1, y1, y2, y2],
-                #             [1, 1, 1, 1],
-                #         ]
-                #     ),
-                # )
-                # original_image_width, original_image_height, _ = current_frame.shape
-                # scaled_pt1 = (int(new_vertices[0][0]), int(new_vertices[1][0]))
-                # scaled_pt2 = (int(new_vertices[0][2]), int(new_vertices[1][2]))
-
-                # scaled_pt1 = normalize_scaled_point(
-                #     *scaled_pt1, original_image_width, original_image_height
-                # )
-                # scaled_pt2 = normalize_scaled_point(
-                #     *scaled_pt2, original_image_width, original_image_height
-                # )
-
-                # # crop image using np slicing since image is stored as a numpy array
-                # cropped_frame = current_frame[
-                #     scaled_pt1[1] : scaled_pt2[1], scaled_pt1[0] : scaled_pt2[0]
-                # ].copy()
-
                 cropped_frame = current_frame.copy()
 
                 if image_detector_thread is None:
@@ -229,15 +163,6 @@ def main():
                     )
                     image_detector_thread.start()
                     cv2.imshow("Detection Image", cropped_frame)
-
-                # cv2.rectangle(
-                #     current_frame,
-                #     scaled_pt1,
-                #     scaled_pt2,
-                #     (0, 255, 0),
-                #     2,
-                #     cv2.LINE_8,
-                # )
 
                 cv2.rectangle(
                     current_frame, (text_x, text_y), pt2, (0, 0, 255), 2, cv2.LINE_8
